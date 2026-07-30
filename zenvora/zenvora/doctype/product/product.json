@@ -21,7 +21,8 @@
   "rating",
   "column_break_3",
   "review_count",
-  "description"
+  "description",
+  "category"
  ],
  "fields": [
   {
@@ -101,13 +102,22 @@
    "fieldname": "description",
    "fieldtype": "Text Editor",
    "label": "Description"
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Category",
+   "options": "Product Category",
+   "reqd": 1
   }
  ],
  "grid_page_length": 50,
  "image_field": "image_1",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-07-31 02:23:58.433604",
+ "modified": "2026-07-31 02:44:49.114411",
  "modified_by": "Administrator",
  "module": "Zenvora",
  "name": "Product",
