@@ -240,9 +240,9 @@ app_license = "mit"
 # Authentication and authorization
 # --------------------------------
 
-# auth_hooks = [
-# 	"zenvora.auth.validate"
-# ]
+auth_hooks = [
+	"zenvora.auth.validate_bearer_token"
+]
 
 # Automatically update python controller files with type annotations for this app.
 # export_python_type_annotations = True
