@@ -11,6 +11,7 @@ def _user_payload(user):
 	return {
 		"email": user,
 		"full_name": frappe.db.get_value("User", user, "full_name"),
+		"phone": frappe.db.get_value("User", user, "phone"),
 		"user_image": frappe.db.get_value("User", user, "user_image"),
 	}
 
@@ -26,7 +27,7 @@ def _token_response(tokens, user):
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])
-def register(email, full_name, password):
+def register(email, full_name, password, phone=None):
 	email = email.strip().lower()
 	if frappe.db.exists("User", email):
 		frappe.local.response["http_status_code"] = 409
@@ -37,6 +38,7 @@ def register(email, full_name, password):
 			"doctype": "User",
 			"email": email,
 			"first_name": full_name,
+			"phone": phone,
 			"user_type": "Website User",
 			"send_welcome_email": 0,
 			"enabled": 1,
