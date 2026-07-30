@@ -1,0 +1,407 @@
+/* Zenvora — storefront login page */
+
+.zv-login-page {
+	--zv-bg: #f3f1ea;
+	--zv-ink: #1c1a17;
+	--zv-muted: #6f6a60;
+	--zv-line: #e2ddd0;
+	--zv-surface: #ffffff;
+	--zv-serif: "Cormorant Garamond", Georgia, serif;
+	--zv-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+	min-height: 100svh;
+	display: flex;
+	flex-direction: column;
+	font-family: var(--zv-sans);
+	color: var(--zv-ink);
+}
+
+body:has(.zv-login-page) {
+	background: var(--zv-bg);
+}
+
+.zv-login-page a {
+	color: inherit;
+}
+
+/* Nav */
+.zv-nav {
+	display: flex;
+	align-items: center;
+	padding: 20px clamp(16px, 5vw, 48px);
+	border-bottom: 1px solid var(--zv-line);
+}
+
+.zv-nav-logo {
+	font-family: var(--zv-serif);
+	font-weight: 600;
+	font-size: 1.4rem;
+	letter-spacing: 0.12em;
+	text-decoration: none;
+	color: var(--zv-ink);
+}
+
+/* Layout */
+.zv-main {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: clamp(20px, 4vh, 56px) clamp(12px, 4vw, 24px);
+}
+
+/* JS toggles these sections' inline display style (block); keep sizing
+   independent of that by giving them an explicit width as flex items of
+   .zv-main, and centering the card itself with auto margins. */
+.zv-main > section {
+	width: 100%;
+}
+
+.for-forgot,
+.for-signup,
+.for-login-with-email-link {
+	display: none;
+}
+
+.hide {
+	display: none !important;
+}
+
+/* Card */
+.zv-card {
+	width: 100%;
+	max-width: 860px;
+	margin: 0 auto;
+	background: var(--zv-surface);
+	border-radius: 20px;
+	box-shadow: 0 20px 60px -20px rgba(28, 26, 23, 0.18);
+	overflow: hidden;
+	display: flex;
+	align-items: stretch;
+}
+
+.zv-card-image {
+	position: relative;
+	flex: 1 1 50%;
+	min-width: 0;
+	background: var(--zv-bg);
+}
+
+.zv-card-image img {
+	width: 100%;
+	height: 100%;
+	min-height: 380px;
+	object-fit: cover;
+	display: block;
+}
+
+.zv-card-image-placeholder {
+	width: 100%;
+	height: 100%;
+	min-height: 380px;
+	background:
+		radial-gradient(circle at 30% 25%, rgba(28, 26, 23, 0.08), transparent 55%),
+		linear-gradient(160deg, #e7e2d4, #d8d2c0);
+}
+
+.zv-card-form {
+	flex: 1 1 50%;
+	padding: clamp(28px, 4vw, 48px);
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	min-width: 0;
+}
+
+.zv-eyebrow {
+	font-family: var(--zv-serif);
+	font-weight: 600;
+	font-size: 0.85rem;
+	letter-spacing: 0.28em;
+	text-transform: uppercase;
+	color: var(--zv-muted);
+	margin: 0 0 6px;
+}
+
+.zv-title {
+	font-family: var(--zv-serif);
+	font-weight: 600;
+	font-size: clamp(1.75rem, 3vw, 2.25rem);
+	margin: 0 0 24px;
+	line-height: 1.15;
+}
+
+.zv-subtitle {
+	font-size: 0.9rem;
+	color: var(--zv-muted);
+	margin: -14px 0 20px;
+}
+
+.zv-form .form-group {
+	margin-bottom: 18px;
+}
+
+.zv-form .form-label {
+	display: block;
+	font-size: 0.85rem;
+	font-weight: 600;
+	margin-bottom: 6px;
+}
+
+.zv-label-row {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.zv-forgot-link {
+	font-size: 0.8rem;
+	text-decoration: underline;
+	color: var(--zv-muted);
+	white-space: nowrap;
+}
+
+.zv-form .email-field,
+.zv-form .password-field {
+	position: relative;
+	display: flex;
+	align-items: center;
+}
+
+.zv-form .form-control {
+	width: 100%;
+	font-family: var(--zv-sans);
+	font-size: 0.95rem;
+	padding: 12px 14px;
+	border: 1px solid var(--zv-line);
+	border-radius: 10px;
+	background: #fff;
+	color: var(--zv-ink);
+	outline: none;
+	transition: border-color 0.15s ease;
+}
+
+.zv-form .password-field .form-control {
+	padding-right: 40px;
+}
+
+.zv-form .form-control:focus {
+	border-color: var(--zv-ink);
+}
+
+.zv-form .toggle-password {
+	position: absolute;
+	right: 12px;
+	cursor: pointer;
+	color: var(--zv-muted);
+}
+
+.zv-form .field-error {
+	display: none;
+	color: #b3261e;
+	font-size: 0.78rem;
+	margin: 6px 0 0;
+}
+
+.zv-form .form-group.invalid .field-error {
+	display: block;
+}
+
+.zv-form .form-group.invalid .form-control {
+	border-color: #b3261e;
+}
+
+.login-error-banner,
+.login-success-banner {
+	display: none;
+	align-items: center;
+	gap: 8px;
+	background: #fbeceb;
+	color: #b3261e;
+	border-radius: 10px;
+	padding: 10px 12px;
+	font-size: 0.85rem;
+	margin-bottom: 16px;
+}
+
+.login-success-banner {
+	background: #eaf3ea;
+	color: #2e6b33;
+}
+
+.page-card-body.invalid .login-error-banner {
+	display: flex;
+}
+
+.page-card-actions {
+	margin-top: 4px;
+}
+
+.zv-btn-login,
+.page-card-actions .btn-primary {
+	width: 100%;
+	background: var(--zv-ink);
+	color: #fff;
+	border: none;
+	border-radius: 10px;
+	padding: 13px 18px;
+	font-size: 0.95rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background 0.15s ease;
+}
+
+.zv-btn-login:hover,
+.page-card-actions .btn-primary:hover {
+	background: #000;
+}
+
+.page-card-actions .btn-login-option,
+.page-card-actions .btn-default {
+	display: block;
+	width: 100%;
+	text-align: center;
+	background: #fff;
+	border: 1px solid var(--zv-line);
+	border-radius: 10px;
+	padding: 11px 18px;
+	font-size: 0.9rem;
+	font-weight: 500;
+	margin-top: 10px;
+	text-decoration: none;
+	color: var(--zv-ink);
+}
+
+.zv-divider {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin: 20px 0 16px;
+	color: var(--zv-muted);
+	font-size: 0.8rem;
+}
+
+.zv-divider::before,
+.zv-divider::after {
+	content: "";
+	flex: 1;
+	height: 1px;
+	background: var(--zv-line);
+}
+
+.zv-social-logins {
+	display: flex;
+	justify-content: center;
+	gap: 12px;
+}
+
+.zv-social-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	border-radius: 999px;
+	border: 1px solid var(--zv-line);
+	background: #fff;
+	text-decoration: none;
+}
+
+.zv-social-btn img,
+.zv-social-btn svg {
+	width: 18px;
+	height: 18px;
+}
+
+.zv-signup-message,
+.zv-trouble-message {
+	font-size: 0.85rem;
+	color: var(--zv-muted);
+	margin: 16px 0 0;
+}
+
+.zv-signup-message a,
+.zv-trouble-message a {
+	font-weight: 600;
+	text-decoration: underline;
+	color: var(--zv-ink);
+}
+
+.resend-link {
+	font-size: 0.8rem;
+	color: var(--zv-muted);
+	text-align: center;
+	margin: 0 0 10px;
+}
+
+.signup-disabled-message {
+	text-align: center;
+}
+
+/* Footer */
+.zv-footer {
+	border-top: 1px solid var(--zv-line);
+	padding: 24px clamp(16px, 5vw, 48px) 32px;
+	text-align: center;
+}
+
+.zv-footer-logo {
+	font-family: var(--zv-serif);
+	font-weight: 600;
+	letter-spacing: 0.1em;
+	margin: 0 0 4px;
+}
+
+.zv-footer-tagline,
+.zv-footer-copy {
+	font-size: 0.8rem;
+	color: var(--zv-muted);
+	margin: 2px 0;
+}
+
+/* Phone responsive: stack image above the form, always */
+@media (max-width: 768px) {
+	.zv-card {
+		flex-direction: column;
+		border-radius: 16px;
+		max-width: 480px;
+	}
+
+	.zv-card-image {
+		order: -1;
+	}
+
+	.zv-card-image img,
+	.zv-card-image-placeholder {
+		min-height: 0;
+		height: 34vh;
+		max-height: 260px;
+	}
+
+	.zv-card-form {
+		padding: 24px 20px 32px;
+	}
+
+	.zv-main {
+		padding: 0;
+		align-items: flex-start;
+	}
+
+	.zv-card {
+		border-radius: 0;
+		box-shadow: none;
+		min-height: 100svh;
+	}
+}
+
+@media (max-width: 380px) {
+	.zv-title {
+		font-size: 1.6rem;
+	}
+
+	.zv-card-image img,
+	.zv-card-image-placeholder {
+		height: 28vh;
+	}
+}

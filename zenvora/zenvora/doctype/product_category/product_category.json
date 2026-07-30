@@ -50,6 +50,14 @@
   {
    "read": 1,
    "role": "Guest"
+  },
+  {
+   "read": 1,
+   "role": "All"
+  },
+  {
+   "read": 1,
+   "role": "Website User"
   }
  ],
  "row_format": "Dynamic",

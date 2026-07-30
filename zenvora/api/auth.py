@@ -46,15 +46,22 @@ def register(email, full_name, password, phone=None):
 	)
 	user.insert(ignore_permissions=True)
 	user.new_password = password
-	user.save(ignore_permissions=True)
+	user.add_roles("Website User")
 	frappe.db.commit()
 
 	return _token_response(issue_tokens(user.name), user.name)
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])
-def login(usr, pwd):
-	result = User.find_by_credentials(usr, pwd)
+def login(email=None, password=None, usr=None, pwd=None, username=None):
+	email = email or usr or username
+	password = password or pwd
+
+	if not email or not password:
+		frappe.local.response["http_status_code"] = 400
+		return {"success": False, "message": _("Email and password are required")}
+
+	result = User.find_by_credentials(email, password)
 
 	if not result or not result.is_authenticated:
 		frappe.local.response["http_status_code"] = 401
@@ -96,9 +103,9 @@ def _try_revoke(token, expected_type):
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 def logout(refresh_token=None):
-	auth_header = frappe.get_request_header("Authorization") or ""
-	if auth_header.lower().startswith("bearer "):
-		_try_revoke(auth_header.split(" ", 1)[1].strip(), "access")
+	access_token = (frappe.get_request_header("X-Zenvora-Token") or "").strip()
+	if access_token:
+		_try_revoke(access_token, "access")
 
 	if refresh_token:
 		_try_revoke(refresh_token, "refresh")
