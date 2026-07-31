@@ -1,0 +1,150 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-08-01 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "user",
+  "website_user",
+  "product",
+  "column_break_1",
+  "rating",
+  "verified_buyer",
+  "sales_order",
+  "section_break_review",
+  "review_title",
+  "review_text",
+  "review_image",
+  "column_break_2",
+  "published"
+ ],
+ "fields": [
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "User",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "website_user",
+   "fieldtype": "Link",
+   "label": "Website User",
+   "options": "Website User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "product",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Product",
+   "options": "Product",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "1 to 5 stars",
+   "fieldname": "rating",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Rating",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "description": "Set automatically — true if this user has a submitted Delivery Note containing this product.",
+   "fieldname": "verified_buyer",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Verified Buyer",
+   "read_only": 1
+  },
+  {
+   "description": "Optional — the order this review was written from, if any.",
+   "fieldname": "sales_order",
+   "fieldtype": "Link",
+   "label": "Sales Order",
+   "options": "Sales Order"
+  },
+  {
+   "fieldname": "section_break_review",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "review_title",
+   "fieldtype": "Data",
+   "label": "Title"
+  },
+  {
+   "fieldname": "review_text",
+   "fieldtype": "Small Text",
+   "label": "Review"
+  },
+  {
+   "fieldname": "review_image",
+   "fieldtype": "Attach Image",
+   "label": "Photo"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "description": "Unpublished reviews are hidden from the public product page.",
+   "fieldname": "published",
+   "fieldtype": "Check",
+   "label": "Published"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-08-01 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Zenvora",
+ "name": "Product Review",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Guest"
+  },
+  {
+   "read": 1,
+   "role": "All"
+  },
+  {
+   "if_owner": 1,
+   "create": 1,
+   "read": 1,
+   "write": 1,
+   "delete": 1,
+   "role": "Website User"
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
