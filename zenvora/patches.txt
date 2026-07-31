@@ -5,3 +5,9 @@
 [post_model_sync]
 # Patches added in this section will be executed after doctypes are migrated
 zenvora.patches.v1_0.create_website_user_role
+zenvora.patches.v1_0.sync_products_to_items
+zenvora.patches.v1_0.add_delivery_tracking_fields
+zenvora.patches.v1_0.setup_order_tracking_permissions
+zenvora.patches.v1_0.add_order_tracking_stages
+zenvora.patches.v1_0.setup_gst_tax_template
+zenvora.patches.v1_0.seed_welcome_coupon

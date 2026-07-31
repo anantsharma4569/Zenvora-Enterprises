@@ -1,13 +1,14 @@
 {
  "actions": [],
- "allow_rename": 0,
  "autoname": "hash",
- "creation": "2026-07-31 10:00:00.000000",
+ "creation": "2026-07-31 10:00:00",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
-  "product",
+  "user",
+  "website_user",
   "column_break_1",
+  "product",
   "qty",
   "section_break_variant",
   "color",
@@ -16,16 +17,33 @@
  ],
  "fields": [
   {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "User",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "description": "The Website User profile for this account (verification status, last login, etc.)",
+   "fieldname": "website_user",
+   "fieldtype": "Link",
+   "label": "Website User",
+   "options": "Website User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
    "fieldname": "product",
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Product",
    "options": "Product",
    "reqd": 1
-  },
-  {
-   "fieldname": "column_break_1",
-   "fieldtype": "Column Break"
   },
   {
    "default": "1",
@@ -58,7 +76,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-07-31 10:00:00.000000",
+ "modified": "2026-08-01 02:07:53.419025",
  "modified_by": "Administrator",
  "module": "Zenvora",
  "name": "Cart Item",

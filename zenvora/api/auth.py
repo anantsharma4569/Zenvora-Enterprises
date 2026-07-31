@@ -3,8 +3,10 @@ import time
 import frappe
 from frappe import _
 from frappe.core.doctype.user.user import User
+from frappe.utils import now_datetime
 
 from zenvora.jwt_utils import decode_token, issue_tokens, revoke
+from zenvora.website_user_utils import get_or_create_website_user
 
 
 def _user_payload(user):
@@ -47,6 +49,8 @@ def register(email, full_name, password, phone=None):
 	user.insert(ignore_permissions=True)
 	user.new_password = password
 	user.add_roles("Website User")
+
+	frappe.get_doc({"doctype": "Website User", "user": user.name}).insert(ignore_permissions=True)
 	frappe.db.commit()
 
 	return _token_response(issue_tokens(user.name), user.name)
@@ -70,6 +74,12 @@ def login(email=None, password=None, usr=None, pwd=None, username=None):
 	if not result.enabled:
 		frappe.local.response["http_status_code"] = 403
 		return {"success": False, "message": _("Your account has been disabled")}
+
+	website_user = get_or_create_website_user(result.name)
+	website_user.last_login_at = now_datetime()
+	website_user.last_ip_address = frappe.local.request_ip
+	website_user.save(ignore_permissions=True)
+	frappe.db.commit()
 
 	return _token_response(issue_tokens(result.name), result.name)
 

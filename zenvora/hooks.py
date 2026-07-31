@@ -138,6 +138,12 @@ app_license = "mit"
 # ---------------
 # Hook on document methods and events
 
+doc_events = {
+	"Delivery Note": {
+		"on_submit": "zenvora.order_tracking.on_delivery_note_submit",
+	},
+}
+
 # doc_events = {
 # 	"*": {
 # 		"on_update": "method",
@@ -149,23 +155,11 @@ app_license = "mit"
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"zenvora.tasks.all"
-# 	],
-# 	"daily": [
-# 		"zenvora.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"zenvora.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"zenvora.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"zenvora.tasks.monthly"
-# 	],
-# }
+scheduler_events = {
+	"hourly": [
+		"zenvora.tasks.expire_stale_otps",
+	],
+}
 
 # Testing
 # -------

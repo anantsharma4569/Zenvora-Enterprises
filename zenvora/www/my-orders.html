@@ -1,0 +1,171 @@
+{% extends "templates/web.html" %}
+
+{% block navbar %}{% endblock %}
+{% block sidebar %}{% endblock %}
+
+{% block head_include %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+{{ include_style('zenvora_orders.bundle.css') }}
+{% endblock %}
+
+{% macro status_pill(status) %}
+<span class="zv-status-pill zv-status-{{ status.lower().replace(' ', '-') }}">{{ _(status) }}</span>
+{% endmacro %}
+
+{% macro progress_tracker(order) %}
+<div class="zv-tracker {{ 'zv-tracker-cancelled' if order.display_status == 'Cancelled' else '' }}">
+	{% for step in order.steps %}
+	<div class="zv-tracker-step {{ 'is-done' if order.progress_step >= loop.index else '' }} {{ 'is-current' if order.progress_step == loop.index and order.display_status != 'Delivered' else '' }}">
+		<span class="zv-tracker-dot"></span>
+		<span class="zv-tracker-label">{{ _(step) }}</span>
+	</div>
+	{% endfor %}
+</div>
+{% endmacro %}
+
+{% macro order_card(order) %}
+<article class="zv-order-card" data-status="{{ order.display_status.lower().replace(' ', '_') }}">
+	<header class="zv-order-head">
+		<div>
+			<p class="zv-order-id">{{ _("Order") }} #{{ order.name }}</p>
+			<p class="zv-order-date">{{ frappe.utils.formatdate(order.transaction_date) }}</p>
+		</div>
+		<div class="zv-order-head-right">
+			{{ status_pill(order.display_status) }}
+			<p class="zv-order-total">{{ frappe.utils.fmt_money(order.grand_total, currency=order.currency) }}</p>
+		</div>
+	</header>
+
+	{{ progress_tracker(order) }}
+
+	<div class="zv-order-items">
+		{% for item in order['items'] %}
+		<div class="zv-order-item">
+			<div class="zv-item-thumb">
+				{% if item.image %}
+				<img src="{{ item.image }}" alt="{{ item.item_name }}" loading="lazy">
+				{% else %}
+				<div class="zv-item-thumb-placeholder"></div>
+				{% endif %}
+			</div>
+			<div class="zv-item-info">
+				<p class="zv-item-name">{{ item.item_name }}</p>
+				<p class="zv-item-meta">{{ _("Qty") }}: {{ item.qty | int }} &middot; {{ frappe.utils.fmt_money(item.rate, currency=order.currency) }}</p>
+			</div>
+			{% if order.display_status == "Delivered" %}
+			<button type="button" class="zv-btn-link zv-btn-review"
+				data-product="{{ item.item_code }}" data-order="{{ order.name }}" data-product-name="{{ item.item_name }}">
+				{{ _("Write Review") }}
+			</button>
+			{% endif %}
+		</div>
+		{% endfor %}
+	</div>
+
+	<footer class="zv-order-actions">
+		{% if order.tracking and order.tracking.tracking_url %}
+		<a class="zv-btn zv-btn-dark" href="{{ order.tracking.tracking_url }}" target="_blank" rel="noopener">
+			{{ _("Track Package") }}
+		</a>
+		{% endif %}
+		{% if order.sales_invoice %}
+		<a class="zv-btn zv-btn-outline"
+			href="/api/method/frappe.utils.print_format.download_pdf?doctype=Sales%20Invoice&name={{ order.sales_invoice | urlencode }}"
+			target="_blank" rel="noopener">
+			{{ _("Download Invoice") }}
+		</a>
+		{% endif %}
+	</footer>
+
+	{% if order.tracking and (order.tracking.courier_name or order.tracking.tracking_no) %}
+	<p class="zv-tracking-meta">
+		{% if order.tracking.courier_name %}{{ order.tracking.courier_name }}{% endif %}
+		{% if order.tracking.tracking_no %} &middot; {{ _("Tracking No") }}: {{ order.tracking.tracking_no }}{% endif %}
+	</p>
+	{% endif %}
+</article>
+{% endmacro %}
+
+{% block page_content %}
+<div class="zv-orders-page">
+	<header class="zv-nav">
+		<a href="/" class="zv-nav-logo">{{ app_name }}</a>
+	</header>
+
+	<main class="zv-orders-main">
+		<h1 class="zv-orders-title">{{ _("My Orders") }}</h1>
+
+		<nav class="zv-tabs" role="tablist">
+			<button type="button" class="zv-tab is-active" data-filter="all" role="tab" aria-selected="true">
+				{{ _("All Orders") }} <span class="zv-tab-count">{{ summary.total }}</span>
+			</button>
+			<button type="button" class="zv-tab" data-filter="in_progress" role="tab" aria-selected="false">
+				{{ _("In Progress") }} <span class="zv-tab-count">{{ summary.in_progress }}</span>
+			</button>
+			<button type="button" class="zv-tab" data-filter="shipped" role="tab" aria-selected="false">
+				{{ _("Shipped") }} <span class="zv-tab-count">{{ summary.shipped }}</span>
+			</button>
+			<button type="button" class="zv-tab" data-filter="delivered" role="tab" aria-selected="false">
+				{{ _("Delivered") }} <span class="zv-tab-count">{{ summary.delivered }}</span>
+			</button>
+			<button type="button" class="zv-tab" data-filter="cancelled" role="tab" aria-selected="false">
+				{{ _("Cancelled") }} <span class="zv-tab-count">{{ summary.cancelled }}</span>
+			</button>
+		</nav>
+
+		<div class="zv-orders-list" id="zv-orders-list">
+			{% for order in orders %}
+				{{ order_card(order) }}
+			{% endfor %}
+		</div>
+
+		{% if not orders %}
+		<div class="zv-empty-state">
+			<p>{{ _("You haven't placed any orders yet.") }}</p>
+			<a href="/" class="zv-btn zv-btn-dark">{{ _("Start Shopping") }}</a>
+		</div>
+		{% endif %}
+
+		<div class="zv-empty-state zv-empty-filtered hide" id="zv-empty-filtered">
+			<p>{{ _("No orders in this category.") }}</p>
+		</div>
+	</main>
+
+	<footer class="zv-footer">
+		<p class="zv-footer-copy">&copy; {{ frappe.utils.now_datetime().year }} {{ app_name }}. {{ _("All rights reserved.") }}</p>
+	</footer>
+
+	<div class="zv-modal-backdrop hide" id="zv-review-modal">
+		<div class="zv-modal">
+			<button type="button" class="zv-modal-close" id="zv-review-modal-close" aria-label="{{ _('Close') }}">&times;</button>
+			<p class="zv-eyebrow">{{ _("Write a Review") }}</p>
+			<h2 class="zv-modal-title" id="zv-review-product-name"></h2>
+
+			<div class="zv-star-picker" id="zv-star-picker" data-rating="0">
+				{% for i in range(1, 6) %}
+				<button type="button" class="zv-star" data-value="{{ i }}" aria-label="{{ i }} {{ _('star') }}">&#9733;</button>
+				{% endfor %}
+			</div>
+
+			<input type="text" id="zv-review-title" class="zv-review-title-input"
+				placeholder="{{ _('Title (optional)') }}">
+
+			<textarea id="zv-review-text" class="zv-review-textarea" rows="4"
+				placeholder="{{ _('Share your thoughts about this product (optional)') }}"></textarea>
+
+			<p class="zv-review-error hide" id="zv-review-error"></p>
+
+			<div class="zv-modal-actions">
+				<button type="button" class="zv-btn zv-btn-dark" id="zv-review-submit">{{ _("Submit Review") }}</button>
+				<button type="button" class="zv-btn zv-btn-outline" id="zv-review-cancel">{{ _("Cancel") }}</button>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>{% include "templates/includes/my_orders.js" %}</script>
+{% endblock %}

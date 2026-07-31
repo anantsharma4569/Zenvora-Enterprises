@@ -6,7 +6,12 @@
  "field_order": [
   "section_break_login",
   "login_page_image",
-  "login_page_image_alt_text"
+  "login_page_image_alt_text",
+  "section_break_razorpay",
+  "razorpay_key_id",
+  "column_break_razorpay",
+  "razorpay_key_secret",
+  "razorpay_webhook_secret"
  ],
  "fields": [
   {
@@ -25,6 +30,33 @@
    "fieldname": "login_page_image_alt_text",
    "fieldtype": "Data",
    "label": "Login Page Image Alt Text"
+  },
+  {
+   "fieldname": "section_break_razorpay",
+   "fieldtype": "Section Break",
+   "label": "Razorpay"
+  },
+  {
+   "description": "Public key id, e.g. rzp_test_xxxxx — safe to expose to the frontend checkout widget.",
+   "fieldname": "razorpay_key_id",
+   "fieldtype": "Data",
+   "label": "Razorpay Key ID"
+  },
+  {
+   "fieldname": "column_break_razorpay",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Never exposed to the frontend — used server-side only to sign/verify payments.",
+   "fieldname": "razorpay_key_secret",
+   "fieldtype": "Password",
+   "label": "Razorpay Key Secret"
+  },
+  {
+   "description": "Set under Razorpay Dashboard > Webhooks. Used to verify incoming webhook payloads.",
+   "fieldname": "razorpay_webhook_secret",
+   "fieldtype": "Password",
+   "label": "Razorpay Webhook Secret"
   }
  ],
  "index_web_pages_for_search": 1,

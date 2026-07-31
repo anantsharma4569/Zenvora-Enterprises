@@ -28,7 +28,7 @@ def get_cart():
 
 	items = frappe.get_all(
 		"Cart Item",
-		filters={"owner": frappe.session.user},
+		filters={"user": frappe.session.user},
 		fields=["name", "product", "qty", "color", "size"],
 		order_by="creation asc",
 	)
@@ -57,7 +57,7 @@ def add_to_cart(product, qty=1, color=None, size=None):
 
 	existing_name = frappe.db.get_value(
 		"Cart Item",
-		{"owner": frappe.session.user, "product": product, "color": color, "size": size},
+		{"user": frappe.session.user, "product": product, "color": color, "size": size},
 		"name",
 	)
 	if existing_name:
@@ -110,7 +110,7 @@ def remove_from_cart(name):
 def clear_cart():
 	_require_login()
 
-	for name in frappe.get_all("Cart Item", filters={"owner": frappe.session.user}, pluck="name"):
+	for name in frappe.get_all("Cart Item", filters={"user": frappe.session.user}, pluck="name"):
 		frappe.delete_doc("Cart Item", name)
 
 	frappe.db.commit()
