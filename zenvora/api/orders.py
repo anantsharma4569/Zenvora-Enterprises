@@ -2,6 +2,12 @@ import frappe
 from frappe import _
 from frappe.utils import add_days, flt, now_datetime, today
 
+from zenvora.inventory_utils import (
+	ZENVORA_WAREHOUSE,
+	get_available_qty,
+	get_variant_item_code,
+	resolve_variant_to_product_size,
+)
 from zenvora.website_user_utils import ZENVORA_COMPANY, get_or_create_customer_for_user
 
 ORDER_LIST_FIELDS = ["name", "transaction_date", "grand_total", "currency", "status", "per_billed"]
@@ -36,6 +42,30 @@ def _get_tax_rows(template_name):
 	return get_taxes_and_charges("Sales Taxes and Charges Template", template_name)
 
 
+def _resolve_order_item(item):
+	"""items[i].item_code is the Product name — resolve it (+ the chosen
+	size) to the actual stock-carrying size variant, and fail fast with a
+	clear message if there isn't enough of it, rather than letting an
+	oversold Sales Order get created."""
+	product = item["item_code"]
+	size = item.get("size")
+	qty = item["qty"]
+
+	variant_item_code = get_variant_item_code(product, size)
+	available = get_available_qty(variant_item_code)
+	if qty > available:
+		if available <= 0:
+			frappe.throw(_("{0} is out of stock in size {1}").format(product, size))
+		frappe.throw(_("Only {0} left of {1} in size {2}").format(available, product, size))
+
+	return {
+		"item_code": variant_item_code,
+		"qty": qty,
+		"rate": item["rate"],
+		"warehouse": ZENVORA_WAREHOUSE,
+	}
+
+
 @frappe.whitelist(methods=["POST"])
 def create_sales_order(items, address_name=None, coupon_code=None):
 	"""Create a Draft Sales Order for the logged-in customer from their cart.
@@ -56,9 +86,7 @@ def create_sales_order(items, address_name=None, coupon_code=None):
 		"company": ZENVORA_COMPANY,
 		"customer": customer,
 		"delivery_date": add_days(today(), 7),
-		"items": [
-			{"item_code": item["item_code"], "qty": item["qty"], "rate": item["rate"]} for item in items
-		],
+		"items": [_resolve_order_item(item) for item in items],
 		"taxes_and_charges": gst_template,
 		"taxes": _get_tax_rows(gst_template),
 	}
@@ -187,7 +215,8 @@ def buy_again(sales_order):
 
 	so = frappe.get_doc("Sales Order", sales_order)
 	for item in so.items:
-		add_to_cart(item.item_code, qty=item.qty)
+		product, size = resolve_variant_to_product_size(item.item_code)
+		add_to_cart(product, qty=item.qty, size=size)
 	return {"success": True}
 
 

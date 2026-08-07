@@ -50,6 +50,16 @@ def register(email, full_name, password, phone=None):
 	user.new_password = password
 	user.add_roles("Website User")
 
+	# The "All" and "Website User" roles both have desk_access=1 on this site
+	# (a pre-existing, site-wide misconfiguration outside Zenvora's own
+	# control — not something to fix here). That makes Frappe's own
+	# user_type auto-correction (User.set_system_user, keyed off
+	# has_desk_access()) force every saved User to "System User", overriding
+	# whatever was set above. Force it back directly via a raw DB write,
+	# bypassing that recompute entirely, so storefront customers end up
+	# correctly typed without touching the shared role config.
+	frappe.db.set_value("User", user.name, "user_type", "Website User")
+
 	frappe.get_doc({"doctype": "Website User", "user": user.name}).insert(ignore_permissions=True)
 	frappe.db.commit()
 

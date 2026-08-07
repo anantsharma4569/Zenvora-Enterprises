@@ -4,9 +4,13 @@
 import frappe
 from frappe.model.document import Document
 
+from zenvora.inventory_utils import ensure_size_variants
+
 # Sales Order/Invoice line items need an Item record (item_code) — Product
 # has no accounting meaning of its own, so every Product is mirrored to a
-# matching non-stock Item of the same name.
+# matching non-stock variant template Item of the same name. Actual stock is
+# carried on its Small/Medium/Large/Extra Large size variants, not the
+# template itself — see zenvora.inventory_utils.
 ITEM_GROUP = "Products"
 
 
@@ -33,3 +37,5 @@ class Product(Document):
 					"image": self.image_1,
 				}
 			).insert(ignore_permissions=True)
+
+		ensure_size_variants(self.name, item_group=ITEM_GROUP, standard_rate=self.price)

@@ -2,10 +2,24 @@ import frappe
 from frappe import _
 from frappe.utils import cint
 
+from zenvora.inventory_utils import get_available_qty, get_variant_item_code
+
 
 def _require_login():
 	if frappe.session.user == "Guest":
 		frappe.throw(_("Please log in to use your bag"), frappe.AuthenticationError)
+
+
+def _assert_available(product, size, requested_qty):
+	if not size:
+		frappe.throw(_("Please select a size"))
+
+	item_code = get_variant_item_code(product, size)
+	available = cint(get_available_qty(item_code))
+	if requested_qty > available:
+		if available <= 0:
+			frappe.throw(_("{0} is out of stock in size {1}").format(product, size))
+		frappe.throw(_("Only {0} left of {1} in size {2}").format(available, product, size))
 
 
 def _serialize(item, product_map):
@@ -60,6 +74,9 @@ def add_to_cart(product, qty=1, color=None, size=None):
 		{"user": frappe.session.user, "product": product, "color": color, "size": size},
 		"name",
 	)
+	existing_qty = cint(frappe.db.get_value("Cart Item", existing_name, "qty")) if existing_name else 0
+	_assert_available(product, size, existing_qty + qty)
+
 	if existing_name:
 		cart_item = frappe.get_doc("Cart Item", existing_name)
 		cart_item.qty = cint(cart_item.qty) + qty
@@ -90,6 +107,7 @@ def update_cart_item(name, qty):
 	if qty <= 0:
 		cart_item.delete()
 	else:
+		_assert_available(cart_item.product, cart_item.size, qty)
 		cart_item.qty = qty
 		cart_item.save()
 

@@ -142,6 +142,11 @@ doc_events = {
 	"Delivery Note": {
 		"on_submit": "zenvora.order_tracking.on_delivery_note_submit",
 	},
+	"Sales Order": {
+		"on_update": "zenvora.zenvora_order_sync.sync_zenvora_order",
+		"on_submit": "zenvora.zenvora_order_sync.sync_zenvora_order",
+		"on_cancel": "zenvora.zenvora_order_sync.sync_zenvora_order",
+	},
 }
 
 # doc_events = {

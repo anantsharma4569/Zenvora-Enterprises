@@ -17,6 +17,7 @@
   "image_1",
   "column_break_2",
   "image_2",
+  "images",
   "section_break_details",
   "rating",
   "column_break_3",
@@ -76,6 +77,13 @@
    "fieldname": "image_2",
    "fieldtype": "Attach Image",
    "label": "Secondary Image"
+  },
+  {
+   "description": "Full photo gallery shown on the product detail page. Add as many as you like — 5-6 is typical.",
+   "fieldname": "images",
+   "fieldtype": "Table",
+   "label": "Gallery Images",
+   "options": "Product Image"
   },
   {
    "fieldname": "section_break_details",

@@ -1,0 +1,78 @@
+{
+ "app": "zenvora",
+ "charts": [],
+ "content": "[{\"id\": \"zv-header\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Zenvora</b></span>\", \"col\": 12}}, {\"id\": \"zv-card-1\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Zenvora Orders Today\", \"col\": 4}}, {\"id\": \"zv-card-2\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Zenvora Total Orders\", \"col\": 4}}, {\"id\": \"zv-spacer\", \"type\": \"spacer\", \"data\": {\"col\": 12}}, {\"id\": \"zv-shortcuts-header\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Shortcuts</b></span>\", \"col\": 12}}, {\"id\": \"zv-sc-1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Sales Orders\", \"col\": 3}}, {\"id\": \"zv-sc-2\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Sales Invoices\", \"col\": 3}}, {\"id\": \"zv-sc-3\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Payment Entries\", \"col\": 3}}, {\"id\": \"zv-sc-4\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Razorpay Transactions\", \"col\": 3}}, {\"id\": \"zv-sc-5\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Products\", \"col\": 3}}, {\"id\": \"zv-sc-6\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Website Users\", \"col\": 3}}, {\"id\": \"zv-sc-7\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Return Requests\", \"col\": 3}}, {\"id\": \"zv-sc-8\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Coupon Codes\", \"col\": 3}}]",
+ "creation": "2026-08-02 19:06:28.759063",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "hide_custom": 0,
+ "idx": 0,
+ "indicator_color": "green",
+ "is_hidden": 0,
+ "label": "Zenvora",
+ "link_type": "DocType",
+ "links": [],
+ "modified": "2026-08-02 19:06:28.759063",
+ "modified_by": "Administrator",
+ "module": "Zenvora",
+ "name": "Zenvora",
+ "number_cards": [],
+ "owner": "Administrator",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 99.0,
+ "shortcuts": [
+  {
+   "doc_view": "",
+   "label": "Sales Orders",
+   "link_to": "Sales Order",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "",
+   "label": "Sales Invoices",
+   "link_to": "Sales Invoice",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "",
+   "label": "Payment Entries",
+   "link_to": "Payment Entry",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "",
+   "label": "Razorpay Transactions",
+   "link_to": "Razorpay Transaction",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "",
+   "label": "Products",
+   "link_to": "Product",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "",
+   "label": "Website Users",
+   "link_to": "Website User",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "",
+   "label": "Return Requests",
+   "link_to": "Return Request",
+   "type": "DocType"
+  },
+  {
+   "doc_view": "",
+   "label": "Coupon Codes",
+   "link_to": "Coupon Code",
+   "type": "DocType"
+  }
+ ],
+ "title": "Zenvora",
+ "type": "Workspace"
+}

@@ -20,7 +20,7 @@ body:has(.zv-login-page) {
 	background: var(--zv-bg);
 }
 
-.zv-login-page a {
+.zv-login-page a:not(.zv-btn):not(.btn-login-option) {
 	color: inherit;
 }
 

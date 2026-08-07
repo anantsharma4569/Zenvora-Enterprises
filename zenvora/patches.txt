@@ -11,3 +11,8 @@ zenvora.patches.v1_0.setup_order_tracking_permissions
 zenvora.patches.v1_0.add_order_tracking_stages
 zenvora.patches.v1_0.setup_gst_tax_template
 zenvora.patches.v1_0.seed_welcome_coupon
+zenvora.patches.v1_0.fix_website_user_types
+zenvora.patches.v1_0.setup_zenvora_workspace
+zenvora.patches.v1_0.backfill_zenvora_orders
+zenvora.patches.v1_0.set_home_page
+zenvora.patches.v1_0.add_size_variants_to_products
