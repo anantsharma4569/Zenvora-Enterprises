@@ -53,6 +53,13 @@ def issue_tokens(user):
 		"exp": now_ts + refresh_exp,
 	}
 
+	# Tracked so a logout call that can't/doesn't hand back this exact refresh
+	# token (lost/omitted by a buggy or malicious client) can still be revoked
+	# via revoke_all_refresh_tokens() below, instead of staying valid for the
+	# full 7-day lifetime after the user thinks they've logged out.
+	frappe.cache().sadd(_active_refresh_key(user), refresh_payload["jti"])
+	frappe.cache().expire_key(_active_refresh_key(user), refresh_exp)
+
 	return {
 		"access_token": jwt.encode(access_payload, secret, algorithm=ALGORITHM),
 		"refresh_token": jwt.encode(refresh_payload, secret, algorithm=ALGORITHM),
@@ -85,3 +92,18 @@ def revoke(jti, ttl_seconds):
 
 def is_revoked(jti):
 	return bool(frappe.cache().exists(f"zenvora_jwt_revoked:{jti}"))
+
+
+def _active_refresh_key(user):
+	return f"zenvora_jwt_active_refresh:{user}"
+
+
+def revoke_all_refresh_tokens(user):
+	"""Best-effort logout-everywhere: revoke every refresh token issued to
+	this user that we still have a record of, not just the one (if any) the
+	client hands back on logout."""
+	jtis = frappe.cache().smembers(_active_refresh_key(user)) or set()
+	for jti in jtis:
+		jti = jti.decode() if isinstance(jti, bytes) else jti
+		revoke(jti, REFRESH_TOKEN_EXPIRY_SECONDS)
+	frappe.cache().delete_key(_active_refresh_key(user))

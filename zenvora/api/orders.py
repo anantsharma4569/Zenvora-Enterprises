@@ -46,7 +46,13 @@ def _resolve_order_item(item):
 	"""items[i].item_code is the Product name — resolve it (+ the chosen
 	size) to the actual stock-carrying size variant, and fail fast with a
 	clear message if there isn't enough of it, rather than letting an
-	oversold Sales Order get created."""
+	oversold Sales Order get created.
+
+	`rate` is deliberately NOT taken from the client — this is the price a
+	customer actually pays, so it's always looked up from the variant's own
+	Item.standard_rate (kept in sync with Product.price by
+	Product.sync_item/ensure_size_variants). Trusting a client-supplied rate
+	here would let anyone submit an order at whatever price they choose."""
 	product = item["item_code"]
 	size = item.get("size")
 	qty = item["qty"]
@@ -58,10 +64,12 @@ def _resolve_order_item(item):
 			frappe.throw(_("{0} is out of stock in size {1}").format(product, size))
 		frappe.throw(_("Only {0} left of {1} in size {2}").format(available, product, size))
 
+	rate = frappe.db.get_value("Item", variant_item_code, "standard_rate")
+
 	return {
 		"item_code": variant_item_code,
 		"qty": qty,
-		"rate": item["rate"],
+		"rate": rate,
 		"warehouse": ZENVORA_WAREHOUSE,
 	}
 
@@ -164,7 +172,11 @@ def get_order_detail(name):
 	transaction, tracking timestamps, and shipping address in one call."""
 	_require_login()
 
-	so = frappe.get_doc("Sales Order", name)  # Frappe enforces the caller owns this via User Permission
+	so = frappe.get_doc("Sales Order", name)
+	# frappe.get_doc() alone does NOT check permissions (that's a separate
+	# step frappe.client.get performs on top of it) — without this, any
+	# logged-in user could read any other customer's order by name.
+	so.check_permission("read")
 
 	txn = frappe.get_all(
 		"Razorpay Transaction",
@@ -214,6 +226,7 @@ def buy_again(sales_order):
 	from zenvora.api.cart import add_to_cart
 
 	so = frappe.get_doc("Sales Order", sales_order)
+	so.check_permission("read")
 	for item in so.items:
 		product, size = resolve_variant_to_product_size(item.item_code)
 		add_to_cart(product, qty=item.qty, size=size)
@@ -225,6 +238,7 @@ def request_return(sales_order, reason=None):
 	_require_login()
 
 	so = frappe.get_doc("Sales Order", sales_order)
+	so.check_permission("read")
 	if so.status != "Completed":
 		frappe.throw(_("Only delivered orders can be returned"))
 	if frappe.db.exists("Return Request", {"sales_order": sales_order}):

@@ -1,6 +1,7 @@
 import frappe
 from frappe import _
 
+from zenvora.inventory_utils import get_variant_item_codes
 from zenvora.website_user_utils import get_or_create_website_user
 
 
@@ -12,15 +13,21 @@ def _require_login():
 def _validate_purchase(product, sales_order):
 	"""If a sales_order is given, make sure it belongs to this user and
 	actually contains this product — reviews shouldn't be forgeable for
-	orders/products the reviewer never bought."""
+	orders/products the reviewer never bought.
+
+	Sales Order Item lines always carry a size-VARIANT's item_code (ERPNext
+	refuses to transact a has_variants=1 template item directly), never the
+	Product template code itself — so this has to check against every one of
+	the product's variant codes, not just `product`."""
 	website_user = get_or_create_website_user(frappe.session.user)
 	so_customer = frappe.db.get_value("Sales Order", sales_order, "customer")
 
 	if not so_customer or so_customer != website_user.customer:
 		frappe.throw(_("You can only review your own orders"), frappe.PermissionError)
 
+	item_codes = get_variant_item_codes(product) + [product]
 	has_item = frappe.db.exists(
-		"Sales Order Item", {"parent": sales_order, "item_code": product}
+		"Sales Order Item", {"parent": sales_order, "item_code": ["in", item_codes], "docstatus": 1}
 	)
 	if not has_item:
 		frappe.throw(_("This product is not part of that order"))
@@ -85,11 +92,12 @@ def _is_delivered_to_user(user, product):
 	if not website_user.customer:
 		return False
 
+	item_codes = get_variant_item_codes(product) + [product]
 	return bool(
 		frappe.db.exists(
 			"Delivery Note Item",
 			{
-				"item_code": product,
+				"item_code": ["in", item_codes],
 				"docstatus": 1,
 				"parent": [
 					"in",

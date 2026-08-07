@@ -5,7 +5,7 @@ from frappe import _
 from frappe.core.doctype.user.user import User
 from frappe.utils import now_datetime
 
-from zenvora.jwt_utils import decode_token, issue_tokens, revoke
+from zenvora.jwt_utils import decode_token, issue_tokens, revoke, revoke_all_refresh_tokens
 from zenvora.website_user_utils import get_or_create_website_user
 
 
@@ -129,6 +129,12 @@ def logout(refresh_token=None):
 
 	if refresh_token:
 		_try_revoke(refresh_token, "refresh")
+
+	# Belt-and-suspenders: revoke every refresh token we've issued this user,
+	# not just the one (if any) the client sent back — a client that
+	# loses/omits it would otherwise leave a valid session for up to 7 days.
+	if frappe.session.user != "Guest":
+		revoke_all_refresh_tokens(frappe.session.user)
 
 	return {"success": True, "message": _("Logged out successfully")}
 

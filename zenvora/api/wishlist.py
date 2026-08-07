@@ -62,6 +62,11 @@ def toggle_wishlist(product):
 @frappe.whitelist(methods=["POST"])
 def remove_from_wishlist(name):
 	_require_login()
+
+	owner = frappe.db.get_value("Wishlist Item", name, "user")
+	if owner != frappe.session.user:
+		frappe.throw(_("Not permitted"), frappe.PermissionError)
+
 	frappe.delete_doc("Wishlist Item", name, ignore_permissions=True)
 	frappe.db.commit()
 	return get_wishlist()

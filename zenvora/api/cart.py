@@ -15,7 +15,10 @@ def _assert_available(product, size, requested_qty):
 		frappe.throw(_("Please select a size"))
 
 	item_code = get_variant_item_code(product, size)
-	available = cint(get_available_qty(item_code))
+	# Locks the Bin row for the rest of this request — closes the window
+	# where two concurrent adds/updates for the same item+size both read the
+	# same stale quantity and both pass this check.
+	available = cint(get_available_qty(item_code, for_update=True))
 	if requested_qty > available:
 		if available <= 0:
 			frappe.throw(_("{0} is out of stock in size {1}").format(product, size))
@@ -67,7 +70,9 @@ def add_to_cart(product, qty=1, color=None, size=None):
 
 	if not frappe.db.exists("Product", product):
 		frappe.throw(_("Product not found"))
-	qty = cint(qty) or 1
+	qty = cint(qty)
+	if qty < 1:
+		frappe.throw(_("Quantity must be at least 1"))
 
 	existing_name = frappe.db.get_value(
 		"Cart Item",

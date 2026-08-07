@@ -51,16 +51,27 @@ def ensure_size_variants(product_name, item_group, standard_rate=None):
 		variant.insert(ignore_permissions=True)
 
 
+def get_variant_item_codes(template_item_code):
+	"""All size-variant Item codes under this Product's template Item."""
+	return frappe.get_all("Item", filters={"variant_of": template_item_code}, pluck="name")
+
+
 def find_variant(template_item_code, size):
+	# Scoped to this product's own variants (via the Item.variant_of index)
+	# instead of scanning every "Size" Item Variant Attribute row in the
+	# system and checking each one's parent individually — this sits on hot
+	# paths (every product page load, every cart action).
+	variant_codes = get_variant_item_codes(template_item_code)
+	if not variant_codes:
+		return None
+
 	rows = frappe.get_all(
 		"Item Variant Attribute",
-		filters={"parenttype": "Item", "attribute": "Size", "attribute_value": size},
-		fields=["parent"],
+		filters={"parent": ["in", variant_codes], "attribute": "Size", "attribute_value": size},
+		pluck="parent",
+		limit_page_length=1,
 	)
-	for row in rows:
-		if frappe.db.get_value("Item", row.parent, "variant_of") == template_item_code:
-			return row.parent
-	return None
+	return rows[0] if rows else None
 
 
 def get_variant_item_code(product_name, size):
@@ -79,15 +90,17 @@ def get_stock_by_size(product_name):
 	that just means nothing has been stocked in for it."""
 	stock = {size: 0 for size in SIZES}
 
-	variants = frappe.get_all(
-		"Item Variant Attribute",
-		filters={"parenttype": "Item", "attribute": "Size"},
-		fields=["parent", "attribute_value"],
-	)
+	variant_codes = get_variant_item_codes(product_name)
+	if not variant_codes:
+		return stock
+
 	variant_sizes = {
 		row.parent: row.attribute_value
-		for row in variants
-		if frappe.db.get_value("Item", row.parent, "variant_of") == product_name
+		for row in frappe.get_all(
+			"Item Variant Attribute",
+			filters={"parent": ["in", variant_codes], "attribute": "Size"},
+			fields=["parent", "attribute_value"],
+		)
 	}
 	if not variant_sizes:
 		return stock
@@ -105,7 +118,50 @@ def get_stock_by_size(product_name):
 	return stock
 
 
-def get_available_qty(item_code):
+def get_in_stock_map(product_names):
+	"""{product_name: bool} for a batch of products in one pass — used to show
+	an Out of Stock badge on product listing cards without an N+1 lookup per
+	card."""
+	if not product_names:
+		return {}
+
+	variants = frappe.get_all(
+		"Item", filters={"variant_of": ["in", product_names]}, fields=["name", "variant_of"]
+	)
+	in_stock = {name: False for name in product_names}
+	if not variants:
+		return in_stock
+
+	in_stock_variants = set(
+		frappe.get_all(
+			"Bin",
+			filters={
+				"item_code": ["in", [v.name for v in variants]],
+				"warehouse": ZENVORA_WAREHOUSE,
+				"actual_qty": [">", 0],
+			},
+			pluck="item_code",
+		)
+	)
+	for variant in variants:
+		if variant.name in in_stock_variants:
+			in_stock[variant.variant_of] = True
+
+	return in_stock
+
+
+def get_available_qty(item_code, for_update=False):
+	if for_update:
+		# Row-locks the Bin for the rest of this request's DB transaction, so
+		# a concurrent add-to-cart for the same item+size can't read the same
+		# stale quantity before either commits — without this, two requests
+		# can both pass a "qty <= available" check that only actually holds
+		# for one of them, oversubscribing limited stock.
+		rows = frappe.db.sql(
+			"select actual_qty from `tabBin` where item_code=%s and warehouse=%s for update",
+			(item_code, ZENVORA_WAREHOUSE),
+		)
+		return rows[0][0] if rows else 0
 	return frappe.db.get_value("Bin", {"item_code": item_code, "warehouse": ZENVORA_WAREHOUSE}, "actual_qty") or 0
 
 

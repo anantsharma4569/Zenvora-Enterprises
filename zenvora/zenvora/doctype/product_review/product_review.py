@@ -4,6 +4,7 @@
 import frappe
 from frappe.model.document import Document
 
+from zenvora.inventory_utils import get_variant_item_codes
 from zenvora.website_user_utils import get_or_create_website_user
 
 
@@ -30,11 +31,15 @@ class ProductReview(Document):
 		if not website_user.customer:
 			return False
 
+		# Delivery Note lines carry a size-variant's item_code, never the
+		# Product template code — check every variant code too, or a real
+		# buyer's review always comes back unverified.
+		item_codes = get_variant_item_codes(self.product) + [self.product]
 		return bool(
 			frappe.db.exists(
 				"Delivery Note Item",
 				{
-					"item_code": self.product,
+					"item_code": ["in", item_codes],
 					"docstatus": 1,
 					"parent": [
 						"in",
@@ -55,7 +60,7 @@ class ProductReview(Document):
 		# supported replacement for AVG()/COUNT().
 		agg = frappe.db.get_all(
 			"Product Review",
-			filters={"product": self.product},
+			filters={"product": self.product, "published": 1},
 			fields=[
 				{"AVG": "rating", "as": "avg_rating"},
 				{"COUNT": "name", "as": "review_count"},

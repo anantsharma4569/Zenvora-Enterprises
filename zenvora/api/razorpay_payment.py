@@ -102,6 +102,16 @@ def _verify_signature(razorpay_order_id, razorpay_payment_id, razorpay_signature
 	return hmac.compare_digest(expected, razorpay_signature or "")
 
 
+def _lock_transaction(txn_name):
+	"""Row-lock the Razorpay Transaction for the rest of this request's DB
+	transaction. The frontend's verify call and Razorpay's webhook often land
+	within the same second — without this, both can read status != "Captured"
+	before either commits, and both finalize: double Sales Invoice + Payment
+	Entry for one payment. Whoever gets the lock first finalizes; the other
+	blocks until that commit, then re-reads status == "Captured" and no-ops."""
+	frappe.db.sql('select name from `tabRazorpay Transaction` where name=%s for update', txn_name)
+
+
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 def verify_razorpay_payment(razorpay_order_id, razorpay_payment_id, razorpay_signature):
 	"""Called by the frontend right after Razorpay Checkout succeeds. Verifies
@@ -111,6 +121,7 @@ def verify_razorpay_payment(razorpay_order_id, razorpay_payment_id, razorpay_sig
 	if not txn_name:
 		frappe.throw(_("Unknown Razorpay order"))
 
+	_lock_transaction(txn_name)
 	txn = frappe.get_doc("Razorpay Transaction", txn_name)
 
 	if txn.status == "Captured":
@@ -285,6 +296,7 @@ def _handle_webhook_captured(payload):
 		frappe.log_error(title=f"Razorpay webhook: unknown order {order_id}")
 		return
 
+	_lock_transaction(txn_name)
 	txn = frappe.get_doc("Razorpay Transaction", txn_name)
 	if txn.status == "Captured":
 		return  # already finalized via the frontend's verify_razorpay_payment call
