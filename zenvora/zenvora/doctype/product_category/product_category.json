@@ -9,8 +9,7 @@
  "engine": "InnoDB",
  "field_order": [
   "category_name",
-  "image",
-  "enabled"
+  "image"
  ],
  "fields": [
   {
@@ -25,13 +24,6 @@
    "fieldname": "image",
    "fieldtype": "Attach Image",
    "label": "Image"
-  },
-  {
-   "default": "1",
-   "fieldname": "enabled",
-   "fieldtype": "Check",
-   "in_list_view": 1,
-   "label": "Enabled"
   }
  ],
  "grid_page_length": 50,
